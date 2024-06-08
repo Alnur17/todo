@@ -17,6 +17,8 @@ class _HomeScreenState extends State<HomeScreen> {
       TextEditingController();
   List<Todo> todos = [];
 
+  GlobalKey<FormState> todoForm = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,9 +50,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {});
               }
             },
-            leading: todos[index].isDone
-                ? const Icon(Icons.done)
-                : const Icon(Icons.close),
+            /// visibility is better than ternary operator
+            leading: Visibility(
+              visible: todos[index].isDone,
+              replacement: const Icon(Icons.close),
+              child: const Icon(Icons.done),
+            ),
+            //      todos[index].isDone
+            //     ? const Icon(Icons.done)
+            //     : const Icon(Icons.close),
             title: Text(todos[index].title),
             subtitle: Text(todos[index].description),
             trailing: Row(
@@ -92,61 +100,75 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context) {
         return Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              const Text(
-                'Add new todo',
-                style: TextStyle(fontSize: 20),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _titleEditingController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(15),
-                    ),
-                  ),
-                  hintText: 'Title',
+          child: Form(
+            key: todoForm,
+            child: Column(
+              children: [
+                const Text(
+                  'Add new todo',
+                  style: TextStyle(fontSize: 20),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 8),
-                child: TextField(
-                  controller: _descriptionEditingController,
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _titleEditingController,
+                  validator: (value) {
+                    if(value?.trim().isEmpty ?? true){
+                      return 'Please enter your title';
+                    }
+                    return null;
+                  },
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(
                         Radius.circular(15),
                       ),
                     ),
-                    hintText: 'Description',
+                    hintText: 'Title',
                   ),
                 ),
-              ),
-              ElevatedButton(
-                style: const ButtonStyle(
-                  fixedSize: WidgetStatePropertyAll(Size(double.maxFinite, 50)),
-                  //backgroundColor: WidgetStatePropertyAll(Colors.ora nge),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8, bottom: 8),
+                  child: TextFormField(
+                    controller: _descriptionEditingController,
+                    validator: (value) {
+                      if(value?.trim().isEmpty ?? true){
+                        return 'Please enter your description';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(15),
+                        ),
+                      ),
+                      hintText: 'Description',
+                    ),
+                  ),
                 ),
-                onPressed: () {
-                  if (_titleEditingController.text.trim().isNotEmpty &&
-                      _descriptionEditingController.text.trim().isNotEmpty) {
-                    todos.add(
-                      Todo(_titleEditingController.text.trim(),
-                          _descriptionEditingController.text.trim(), false),
-                    );
-                    if (mounted) {
-                      setState(() {});
-                    }
-                    _titleEditingController.clear();
-                    _descriptionEditingController.clear();
-                    Navigator.pop(context);
-                  } else {}
-                },
-                child: const Text('Add'),
-              ),
-            ],
+                ElevatedButton(
+                  style: const ButtonStyle(
+                    fixedSize: WidgetStatePropertyAll(Size(double.maxFinite, 50)),
+                    //backgroundColor: WidgetStatePropertyAll(Colors.ora nge),
+                  ),
+                  onPressed: () {
+                    if ( todoForm.currentState!.validate()) {
+                      todos.add(
+                        Todo(_titleEditingController.text.trim(),
+                            _descriptionEditingController.text.trim(), false),
+                      );
+                      if (mounted) {
+                        setState(() {});
+                      }
+                      _titleEditingController.clear();
+                      _descriptionEditingController.clear();
+                      Navigator.pop(context);
+                    } else {}
+                  },
+                  child: const Text('Add'),
+                ),
+              ],
+            ),
           ),
         );
       },
