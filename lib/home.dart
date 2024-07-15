@@ -41,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: ListView.separated(
+      body: ListView.separated(
         itemCount: todos.length,
         itemBuilder: (context, index) {
           return ListTile(
